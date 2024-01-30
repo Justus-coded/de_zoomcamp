@@ -1,0 +1,90 @@
+select count(*) from green_tripdata_2019_
+
+select * from green_tripdata_2019_
+LIMIT 5
+
+-- Q3 15612
+select count(*)
+from green_tripdata_2019_
+where lpep_pickup_datetime::date = date '2019-09-18'
+and lpep_dropoff_datetime::date = date '2019-09-18' ;
+
+-- Q4 2019-09-26 08:58:52 --4 days 04:45:02
+select lpep_pickup_datetime, lpep_dropoff_datetime - lpep_pickup_datetime maxi
+from green_tripdata_2019_
+order by maxi desc
+Limit 1 
+
+
+-- Q5 select 
+select b.borough, sum(a.total_amount) total
+from green_tripdata_2019_ a
+LEFT JOIN taxi_zone b
+ON a.pulocationid = b.locationid
+where a.lpep_pickup_datetime::date = date '2019-09-18'
+group by b.borough
+order by total desc
+limit 3
+--and lpep_dropoff_datetime::date = date '2019-09-18' ;
+---ANS
+
+
+-- Q 6
+---Wrong
+select b.zone, b.service_zone,b.borough, a.tip_amount tip
+from green_tripdata_2019_ a
+LEFT JOIN taxi_zone b
+ON a.dolocationid = b.locationid
+where to_char(a.lpep_pickup_datetime, 'YYYY-MM') = '2019-09'
+and b.zone = 'Astoria'
+order by tip desc
+
+---Correct ANS  Q 6
+WITH SeptemberAstoriaTrips AS (
+    SELECT 
+        t.dolocationid,
+        tz.zone,
+        t.tip_amount AS total_tip
+    FROM 
+        green_tripdata_2019_ t
+    JOIN 
+        taxi_zone tz ON t.dolocationid = tz.locationid
+    WHERE 
+        t.pulocationid = (SELECT locationid FROM taxi_zone WHERE zone = 'Astoria')
+        AND EXTRACT(MONTH FROM t.lpep_pickup_datetime) = 9
+        AND EXTRACT(YEAR FROM t.lpep_pickup_datetime) = 2019
+    --GROUP BY 
+      --  t.dolocationid, tz.zone
+	order by total_tip desc
+)
+SELECT 
+    zone AS DropOffZoneWithLargestTip
+FROM 
+    SeptemberAstoriaTrips
+ORDER BY 
+    total_tip DESC
+LIMIT 1;
+
+
+
+
+
+select dolocationid
+from green_tripdata_2019_
+order by "PULocationID" desc
+
+select LocationID from taxi_zone
+
+ALTER TABLE green_tripdata_2019_
+RENAME COLUMN "DOLocationID" to dolocationid; 
+
+
+
+ALTER TABLE taxi_zone
+RENAME COLUMN "Zone" to zone; 
+
+select * from taxi_zone
+
+select distinct zone
+from taxi_zone
+where zone ='Astoria'
